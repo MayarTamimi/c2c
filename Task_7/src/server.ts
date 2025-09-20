@@ -10,13 +10,14 @@ import type { User } from "./shared/types";
 dotenv.config();
 const PORT = process.env.PORT || 3333;
 
-const app = express();
+export const app = express();
 app.use(express.json());
 
 const userRepo = new repository<User>();
 
 app.use("/auth", authRoutes);
 app.use("/courses", courseRoutes);
+
 app.use((err: any, _req: Request, res: Response, _next: any) => {
   const status = err.statusCode || 500;
   res.status(status).json({ message: err.message || "Internal Server Error" });
@@ -24,7 +25,6 @@ app.use((err: any, _req: Request, res: Response, _next: any) => {
 app.use((_req: Request, res: Response) => {
   res.status(404).json({ message: "Route not found" });
 });
-
 
 app.get("/users/me", authMiddleWare, (req: Request, res: Response) => {
   const currentUser = userRepo.findById((req as any).user.id);
@@ -54,8 +54,8 @@ app.get("/", (_req: Request, res: Response) => {
   res.json({ message: "Hello World" });
 });
 
-
-
-app.listen(PORT, () =>
-  console.log(`Server running on http://localhost:${PORT}`)
-);
+if (process.env.NODE_ENV !== "test") {
+  app.listen(PORT, () =>
+    console.log(`Server running on http://localhost:${PORT}`)
+  );
+}
